@@ -1,7 +1,7 @@
 ---
 title: "Statistical assignment 4"
-author: "[add your name here]"
-date: "[add date here]"
+author: "Josephine Semaille"
+date: "03/03/2020"
 output: github_document
 ---
 
@@ -22,10 +22,10 @@ First we will need to open and recode the data. I supply the code for this; you 
 
     ```{r}
 library(tidyverse)
-Data8 <- read_tsv("...h_indresp.tab")
+Data8 <- read_tsv("~/Desktop/UKDA-6614-tab/tab/ukhls_w8/h_indresp.tab")
 Data8 <- Data8 %>%
         select(pidp, h_age_dv, h_payn_dv, h_gor_dv)
-Stable <- read_tsv("...xwavedat.tab")
+Stable <- read_tsv("~/Desktop/UKDA-6614-tab/tab/ukhls_wx/xwavedat.tab")
 Stable <- Stable %>%
         select(pidp, sex_dv, ukborn, plbornc)
 Data <- Data8 %>% left_join(Stable, "pidp")
@@ -67,23 +67,93 @@ Reproduce the following graphs as close as you can. For each graph, write two se
 1. Univariate distribution (20 points).
 
     ```{r}
+
+
+    
+ggplot(Data,
+      aes(x = h_payn_dv, y = )) +
+      xlab("Monthly earnings") +
+      ylab("Number of respondents") +
+      geom_line() +
+      xlim(0, 3000)
+
+   
+    
     ```
+I couldn't create a variable for number of respondents. Nevertheless, from the document given, the graph tells us that the great majority of respondents have a monthly salary of between 500 and 2700 pounds.
+
+
 
 2. Line chart (20 points). The lines show the non-parametric association between age and monthly earnings for men and women.
 
     ```{r}
+
+ggplot(data = Data) +
+    geom_smooth(mapping = aes(x = h_age_dv, y = h_payn_dv, linetype = sex_dv),colour="black") +
+    xlab("Age") +
+    ylab("Monthly earnings") +
+    xlim(15, 65)
+    labs(linetype = " Sex")
+    
+    
+    
     ```
+
+This graph tells us that on an average, male have a superior monthly income compared to women's. For men, their highest salary will be between 35 and 55 years old (above 2000) and for women it will be between 37 and 55 years old (around 1500)
+
 
 3. Faceted bar chart (20 points).
 
     ```{r}
+
+
+Data %>%
+mutate(
+    median_income = median(h_payn_dv, na.rm = TRUE)
+    )
+
+Data %>%
+  ggplot(mapping =  aes(x = sex_dv, y = median_income)) + 
+  geom_histogram(stat_bin(2)) + 
+  xlab("Sex") +
+  ylab("Median monthly pay") +
+  facet_wrap(~ placeBorn, nrow = 3)    
+
+
+
     ```
+
+I admit there is an error in my code. Nevertheless, from the document given, the faceted bar chart tells us that whatever the country of origin, the median income will be lower for women.
 
 4. Heat map (20 points).
 
     ```{r}
+
+Data <- Data %>%
+  mutate(generation = case_when(
+    h_age_dv <= 30 ~ 30,
+    between(h_age_dv, 31, 40) ~ 40,
+    between(h_age_dv, 41, 50) ~ 50,
+    between(h_age_dv, 51, 60) ~ 60,
+    between(h_age_dv, 61, 70) ~ 70,
+    between(h_age_dv, 71, 80) ~ 80
+  ))
+    
+
+
+Data %>% 
+    count(h_gor_dv, placeBorn, generation) %>%  
+    ggplot(mapping = aes(x = h_gor_dv, y = placeBorn)) +
+    geom_tile(mapping = aes(fill = generation)) +
+    xlab("Region") +
+    ylab("Country of Birth") 
+
     
     ```
+
+This heatmap represent the mean age of the different ethnicities per region of the United Kingdom. We can underline that people bron in Nigeria and Bangladesh tend to have a younger mean age and people coming from Jamaica or Ireland have an older mean age.
+
+
 
 5. Population pyramid (20 points).
 
